@@ -14,9 +14,10 @@ function _init()
 end
 
 function _update()
-	if not active_text then
+	if not ui_active then
 		update_player()
 	end
+	update_ui()
 end
 
 function _draw()
@@ -24,8 +25,7 @@ function _draw()
 	draw_map()
 	draw_player()
 	draw_crops()
-	draw_text()
-	draw_inv()
+	draw_ui()
 end
 
 -->8
@@ -195,6 +195,7 @@ function init_farm()
 	crops[4]={name="corn",spr1=54,spr2=55}
 	crops[5]={name="axe",spr1=34,spr2=35}
 	plots={}
+	planting=false
 end
 
 function get_plot(x,y)
@@ -212,13 +213,7 @@ function plant(x,y,crop)
 		crop=crop,
 		stage=1
 	})
-	dia(crops[crop].name.." seed\nplanted!")
 end
-
---function grow(x,y)
---	local plot=get_plot(x,y)
---	plot.stage+=1
---end
 
 function grow_plots()
 	for plot in all(plots) do
@@ -246,10 +241,9 @@ function farm(x,y)
 		if p.axeseed then
 			plant(x,y,5)
 			p.axeseed=false
-		elseif p.seeds[1]>=1 then
-			--todo: pick crop to plant
-			plant(x,y,1)
-			p.seeds[1]-=1
+			dia("axe seed\nplanted!")
+		else
+			pick_seed(x,y)
 		end
 	elseif plot.stage==1 then
 		--still growing
@@ -276,6 +270,8 @@ end
 --ui
 
 function init_ui()
+	ui_active=false
+	show_inv=false
 	texts={}
 	add_text(5,2,"moo!")
 	add_text(4,6,"moo!")
@@ -285,6 +281,21 @@ function init_ui()
 	add_text(17,2,"★ farm ★\n(yours)")
 	add_text(21,1,"that's it\nso far...")
 	dias={}
+	init_plant()
+end
+
+function update_ui()
+	ui_active=(active_text or planting or show_inv)
+	
+	show_inv=(btn(❎) and btn(🅾️))
+	
+	if (planting) update_plant()
+end
+
+function draw_ui()
+	draw_text()
+	draw_inv()
+	draw_plant()
 end
 
 function add_text(x,y,txt)
@@ -334,7 +345,7 @@ function draw_text()
 end
 
 function draw_inv()
-	if (not btn(❎)) return
+	if (not show_inv) return
 	
 	local ix=mx*8+4
 	local iy=my*8+4
@@ -357,6 +368,59 @@ function draw_inv()
 	elseif p.axeseed then
 		spr(34,ix,iy+48)
 	end
+end
+
+function init_plant()
+	psel=1
+	pcount=#p.seeds
+end
+
+function pick_seed(x,y)
+	planting=true
+	plantx=x
+	planty=y
+end
+
+function update_plant()
+ if btnp(❎) then
+ 	planting=false
+ 	return
+ end
+ 
+ --todo: stop movement input
+ --from changing selection
+ if (btnp(⬅️)) psel-=1
+ if (btnp(➡️)) psel+=1
+ if psel<1 then
+ 	psel=pcount
+ elseif psel>pcount then
+ 	psel=1
+ end
+ 
+ local sc=p.seeds[psel]
+ 
+ if btnp(🅾️) and sc>=1 then
+ 	plant(plantx,planty,psel)
+ 	p.seeds[psel]-=1
+ 	planting=false
+ end
+end
+
+function draw_plant()
+	if (not planting) return
+	
+	local px=mx*8+4
+	local py=my*8+20
+	local cn=crops[psel].name
+	local cs=crops[psel].spr2
+	local sc=p.seeds[psel]
+	
+	rectfill(px,py,px+55,py+23,0)
+	print("🅾️plant ❎nvm",px+2,py+17,7)
+	print("⬅️",px+15,py+9,7)
+	print("➡️",px+34,py+9,7)
+	print(cn.." ("..sc..")",px+2,py+2,7)
+	spr(cs,px+24,py+8)
 end
 
 __gfx__

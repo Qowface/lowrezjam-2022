@@ -544,14 +544,14 @@ function draw_inv()
 	end
 	if p.pick then
 		spr(50,ix+16,iy+48)
-	elseif p.axeseed then
+	elseif p.pickseed then
 		spr(34,ix+16,iy+48)
 	else
 		spr(65,ix+16,iy+48)
 	end
 	if p.rod then
 		spr(51,ix+32,iy+48)
-	elseif p.axeseed then
+	elseif p.rodseed then
 		spr(34,ix+32,iy+48)
 	else
 		spr(65,ix+32,iy+48)

@@ -14,6 +14,7 @@ function _init()
 end
 
 function _update()
+	input=frame_input()
 	if not ui_active then
 		update_player()
 	end
@@ -26,6 +27,21 @@ function _draw()
 	draw_player()
 	draw_crops()
 	draw_ui()
+end
+
+function frame_input()
+	return {
+		[⬅️]=btnp(⬅️),
+		[➡️]=btnp(➡️),
+		[⬆️]=btnp(⬆️),
+		[⬇️]=btnp(⬇️),
+		clear=function(self)
+			self[⬅️]=false
+			self[➡️]=false
+			self[⬆️]=false
+			self[⬇️]=false
+		end
+	}
 end
 
 -->8
@@ -55,16 +71,16 @@ function update_player()
 	local dx=p.x
 	local dy=p.y
 	
-	if (btnp(⬅️)) then
+	if (input[⬅️]) then
 		dx-=1
 		p.spr=p.sprl
 	end
-	if (btnp(➡️)) then
+	if (input[➡️]) then
 		dx+=1
 		p.spr=p.sprr
 	end
-	if (btnp(⬆️)) dy-=1
-	if (btnp(⬇️)) dy+=1
+	if (input[⬆️]) dy-=1
+	if (input[⬇️]) dy+=1
 	
 	if can_move(dx,dy) then
 		--p.x=mid(0,dx,127)
@@ -74,6 +90,8 @@ function update_player()
 	else
 		sfx(0)
 	end
+	
+	input:clear()
 	
 	interact(dx,dy)
 end
@@ -583,13 +601,11 @@ function update_plant()
  	return
  end
  
- --todo: stop movement input
- --from changing selection
- if btnp(⬅️) then
+ if input[⬅️] then
  	psel-=1
  	sfx(6)
  end
- if btnp(➡️) then
+ if input[➡️] then
  	psel+=1
  	sfx(6)
  end
@@ -633,11 +649,11 @@ function update_buy()
  	return
  end
  
- if btnp(⬅️) then
+ if input[⬅️] then
  	psel-=1
  	sfx(6)
  end
- if btnp(➡️) then
+ if input[➡️] then
  	psel+=1
  	sfx(6)
  end
@@ -686,11 +702,11 @@ function update_sell()
  	return
  end
  
- if btnp(⬅️) then
+ if input[⬅️] then
  	psel-=1
  	sfx(6)
  end
- if btnp(➡️) then
+ if input[➡️] then
  	psel+=1
  	sfx(6)
  end
